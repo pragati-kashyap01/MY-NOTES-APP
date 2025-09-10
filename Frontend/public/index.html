@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .note-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .note-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.25);
+        }
+        button:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s ease-in-out;
+        }
+        input, textarea {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+
+    <!-- Main Container -->
+    <div id="app" class="min-h-screen flex flex-col items-center p-8">
+        
+        <!-- Header -->
+        <header class="w-full max-w-5xl text-center py-12">
+            <h1 class="text-4xl font-bold text-white mb-4">My Notes</h1>
+            <p class="text-xl text-gray-400">A simple, beautiful way to capture your thoughts.</p>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="w-full max-w-5xl bg-gray-800 p-10 rounded-2xl shadow-2xl">
+
+            <!-- Authentication Form -->
+            <div id="auth-section" class="mb-10">
+                <h2 class="text-4xl font-bold text-center text-gray-200 mb-8">Login / Sign Up</h2>
+                <div class="space-y-6">
+                    <input id="username-input" type="text" placeholder="Username" class="w-full p-4 border border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-700 text-white placeholder-gray-400">
+                    <button id="login-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-md transition-colors">Login</button>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div id="notes-section" class="hidden">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-bold text-gray-200">Your Notes</h2>
+                    <input id="search-input" type="text" placeholder="Search notes..." class="p-3 border border-gray-600 rounded-lg w-1/3 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors bg-gray-700 text-white placeholder-gray-400">
+                </div>
+
+                <!-- Add/Edit Note Form -->
+                <div class="bg-gray-700 p-8 rounded-2xl border border-gray-600 mb-10 shadow-sm">
+                    <h3 id="note-form-title" class="text-2xl font-semibold text-gray-200 mb-6">Add a New Note</h3>
+                    <div class="space-y-4">
+                        <input id="note-title-input" type="text" placeholder="Note Title" class="w-full p-4 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400">
+                        <textarea id="note-content-input" placeholder="Note Content" rows="5" class="w-full p-4 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"></textarea>
+                        <div class="flex justify-end space-x-3">
+                            <button id="add-note-button" class="bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-sm">Save Note</button>
+                            <button id="cancel-edit-button" class="bg-gray-500 hover:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors hidden shadow-sm">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes List -->
+                <div id="notes-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Note cards will be injected here by JavaScript -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Mock data to simulate a backend API
+        let notes = [];
+        let editingNoteId = null;
+
+        const authSection = document.getElementById('auth-section');
+        const notesSection = document.getElementById('notes-section');
+        const usernameInput = document.getElementById('username-input');
+        const loginButton = document.getElementById('login-button');
+        const noteTitleInput = document.getElementById('note-title-input');
+        const noteContentInput = document.getElementById('note-content-input');
+        const addNoteButton = document.getElementById('add-note-button');
+        const notesList = document.getElementById('notes-list');
+        const noteFormTitle = document.getElementById('note-form-title');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const searchInput = document.getElementById('search-input');
+
+        // Initial state check
+        let currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            currentUser = JSON.parse(currentUser);
+            showNotesSection();
+            loadNotes();
+        }
+
+        // --- Authentication Logic ---
+        loginButton.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            if (username) {
+                // In a real app, this would be a fetch() call to your backend
+                currentUser = { username };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showNotesSection();
+                loadNotes();
+            }
+        });
+
+        function showNotesSection() {
+            authSection.classList.add('hidden');
+            notesSection.classList.remove('hidden');
+        }
+
+        // --- Note CRUD Operations ---
+        addNoteButton.addEventListener('click', () => {
+            const title = noteTitleInput.value.trim();
+            const content = noteContentInput.value.trim();
+
+            if (title && content) {
+                if (editingNoteId) {
+                    updateNote(editingNoteId, { title, content });
+                } else {
+                    addNote({ title, content });
+                }
+                resetForm();
+            }
+        });
+        
+        cancelEditButton.addEventListener('click', () => {
+            resetForm();
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredNotes = notes.filter(note =>
+                note.title.toLowerCase().includes(searchTerm) ||
+                note.content.toLowerCase().includes(searchTerm)
+            );
+            renderNotes(filteredNotes);
+        });
+
+        function addNote(note) {
+            const newNote = {
+                id: Date.now().toString(),
+                ...note,
+                isPinned: false
+            };
+            notes.push(newNote);
+            saveNotes();
+            renderNotes(notes);
+        }
+
+        function updateNote(id, updatedData) {
+            notes = notes.map(note =>
+                note.id === id ? { ...note, ...updatedData } : note
+            );
+            saveNotes();
+            renderNotes(notes);
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(note => note.id !== id);
+            saveNotes();
+            renderNotes(notes);
+        }
+
+        function pinNote(id) {
+            notes = notes.map(note =>
+                note.id === id ? { ...note, isPinned: !note.isPinned } : note
+            );
+            // Sort to show pinned notes first
+            notes.sort((a, b) => b.isPinned - a.isPinned);
+            saveNotes();
+            renderNotes(notes);
+        }
+
+        function saveNotes() {
+            localStorage.setItem('notes', JSON.stringify(notes));
+        }
+
+        function loadNotes() {
+            const savedNotes = localStorage.getItem('notes');
+            if (savedNotes) {
+                notes = JSON.parse(savedNotes);
+                notes.sort((a, b) => b.isPinned - a.isPinned);
+            }
+            renderNotes(notes);
+        }
+
+        function renderNotes(notesToRender) {
+            notesList.innerHTML = '';
+            if (notesToRender.length === 0) {
+                notesList.innerHTML = '<p class="text-center text-gray-500 col-span-full">No notes found. Start by adding one!</p>';
+                return;
+            }
+
+            notesToRender.forEach(note => {
+                const noteCard = document.createElement('div');
+                noteCard.classList.add('note-card', 'p-6', 'rounded-xl', 'shadow-md', 'relative', 'flex', 'flex-col', 'h-full', 'border');
+
+                // Apply dynamic classes based on theme and state
+                noteCard.classList.add('bg-gray-700', 'border-gray-600');
+                if (note.isPinned) {
+                    noteCard.classList.remove('bg-gray-700');
+                    noteCard.classList.add('bg-green-900', 'border-green-500');
+                }
+
+                noteCard.innerHTML = `
+                    <h3 class="text-xl font-bold mb-2 break-words text-gray-200">${note.title}</h3>
+                    <p class="text-gray-400 mb-4 flex-grow overflow-hidden text-ellipsis">${note.content}</p>
+                    <div class="flex justify-end space-x-2 mt-auto">
+                        <button class="pin-button text-gray-500 hover:text-green-500 transition-colors" data-id="${note.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="${note.isPinned ? '#34d399' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                            </svg>
+                        </button>
+                        <button class="edit-button text-gray-500 hover:text-yellow-500 transition-colors" data-id="${note.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button class="delete-button text-gray-500 hover:text-red-500 transition-colors" data-id="${note.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.013 21H7.987a2 2 0 01-1.92-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                noteCard.querySelector('.edit-button').addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    const noteToEdit = notes.find(note => note.id === id);
+                    if (noteToEdit) {
+                        noteTitleInput.value = noteToEdit.title;
+                        noteContentInput.value = noteToEdit.content;
+                        editingNoteId = id;
+                        noteFormTitle.textContent = 'Edit Note';
+                        addNoteButton.textContent = 'Update Note';
+                        cancelEditButton.classList.remove('hidden');
+                    }
+                });
+
+                noteCard.querySelector('.delete-button').addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    deleteNote(id);
+                });
+
+                noteCard.querySelector('.pin-button').addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    pinNote(id);
+                });
+
+                notesList.appendChild(noteCard);
+            });
+        }
+        
+        function resetForm() {
+            noteTitleInput.value = '';
+            noteContentInput.value = '';
+            editingNoteId = null;
+            noteFormTitle.textContent = 'Add a New Note';
+            addNoteButton.textContent = 'Save Note';
+            cancelEditButton.classList.add('hidden');
+        }
+
+    </script>
+
+</body>
+</html>
