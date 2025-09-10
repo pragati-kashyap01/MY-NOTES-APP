@@ -1,25 +1,24 @@
-# 📝 MY NOTES APP (MERN Stack)
+# MY NOTES APP (MERN Stack)
 
-This is a full-stack **Notes Application** built using the **MERN (MongoDB, Express.js, React.js, Node.js)** stack.  
-It allows users to **sign up, log in, add, edit, delete, pin, and search notes**.
+
+A full-stack **Notes Application** built with the **MERN (MongoDB, Express.js, React.js, Node.js)** stack.  
+Easily create, edit, delete, pin, and search your notes with a clean UI.
 
 ---
 
 ##  Features
-- User Authentication (Sign up / Login)
-- Add new notes
-- Edit existing notes
-- Delete notes
-- Pin important notes
-- Search notes by title or content
+1. User Authentication (Sign Up / Login)  
+2. Create, Edit, Delete Notes  
+3. Pin Important Notes  
+4. Search Notes by Title or Content  
 
 ---
 
 ##  Tech Stack
-- **Frontend:** React.js (with Tailwind CSS for styling)  
-- **Backend:** Node.js, Express.js  
-- **Database:** MongoDB (local or MongoDB Atlas)  
-- **Package Manager:** npm  
+- **Frontend:** React.js (Tailwind CSS for styling)
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB
+- **Package Manager:** npm
 
 ---
 
@@ -27,19 +26,60 @@ It allows users to **sign up, log in, add, edit, delete, pin, and search notes**
 
 notes-app/
 │
-├── backend/               # Node.js + Express
+├── backend/          # Node.js + Express
 │   ├── server.js
 │   ├── routes/
 │   ├── models/
 │   └── controllers/
 │
-├── frontend/              # React app
+├── frontend/         # React app
 │   ├── public/
-│   │   └── index.html     # Your HTML file (entry point for React)
+│   │   └── index.html
 │   └── src/
-│       ├── components/    # React components (Notes, Auth, etc.)
+│       ├── components/
 │       ├── pages/
-│       ├── App.js
-│       └── index.js
+│       └── App.js
 │
 └── README.md
+⚡ Installation & Setup
+1️⃣ Clone the repository
+bash
+Copy code
+git clone https://github.com/pragati-kashyap01/MY-NOTES-APP.git
+cd my-notes-app
+2️⃣ Backend Setup
+bash
+Copy code
+cd backend
+npm install
+npm start
+3️⃣ Frontend Setup
+bash
+Copy code
+cd frontend
+npm install
+npm start
+4️⃣ Environment Variables
+Create a .env file in backend/:
+
+env
+Copy code
+MONGO_URI=your-mongodb-uri
+JWT_SECRET=your-secret-key
+PORT=5000
+🎯 How It Works
+User signs up or logs in
+
+User creates/edit/delete notes
+
+User can pin & search notes
+
+Data is stored securely in MongoDB
+
+📸 Screenshots
+
+🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first.
+
+🧑‍💻 Author
+👩 Pragati Kashyap
