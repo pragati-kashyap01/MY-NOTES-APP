@@ -97,7 +97,6 @@ For major changes, please open an issue first to discuss.
 ------------------------------------------------------------
 
 ## 👩 Author
-Pragati Kashyap  
-BSc Computer Science & Data Analytics  
+Pragati Kashyap   
 IIT Patna (Graduating 2026)
 
